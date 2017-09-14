@@ -1,5 +1,9 @@
 package com.ikarsoft.rd;
 
+import com.ikarsoft.rd.ingredients.IIngredientHelper;
+import com.ikarsoft.rd.ingredients.IIngredients;
+import com.ikarsoft.rd.ingredients.Ingredients;
+import com.ikarsoft.rd.recipe.IRecipeWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -75,7 +79,7 @@ public class ErrorHelper {
         recipeInfoBuilder.append('\n').append(ItemStack.class.getName()).append(": ").append(ingredientOutputInfo);
 
         recipeInfoBuilder.append("\nInputs:");
-        List<List<ItemStack>> inputLists = Internal.getStackHelper().expandRecipeItemStackInputs(inputs, false);
+        List<List<ItemStack>> inputLists = StackHelper.instance().expandRecipeItemStackInputs(inputs, false);
         List<String> ingredientInputInfo = getIngredientInfo(ItemStack.class, inputLists);
         recipeInfoBuilder.append('\n').append(ItemStack.class.getName()).append(": ").append(ingredientInputInfo);
 

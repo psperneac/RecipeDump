@@ -1,4 +1,4 @@
-package com.ikarsoft.rd;
+package com.ikarsoft.rd.ingredients;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

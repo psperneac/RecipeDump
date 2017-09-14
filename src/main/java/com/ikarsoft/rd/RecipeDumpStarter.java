@@ -1,6 +1,8 @@
 package com.ikarsoft.rd;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -12,6 +14,7 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -28,6 +31,8 @@ public class RecipeDumpStarter {
 
     protected StackHelper stackHelper = StackHelper.instance();
 
+    private final Multiset<Item> subtypeCount = HashMultiset.create();
+
     public void start() {
 
         long startedTime = System.currentTimeMillis();
@@ -36,7 +41,7 @@ public class RecipeDumpStarter {
         Log.get().info("Writing recipe dump to "+ff.getAbsolutePath());
         try(PrintWriter out = new PrintWriter(new FileWriter(ff))) {
 
-            loadIngredients();
+            List<ItemStack> allIngredients = loadIngredients();
 
             List<IRecipe> craftingManagerRecipes = new ArrayList<>();
             Iterator<IRecipe> recipeIterator = CraftingManager.REGISTRY.iterator();
@@ -84,7 +89,7 @@ public class RecipeDumpStarter {
         started = true;
     }
 
-    private void loadIngredients() {
+    private List<ItemStack> loadIngredients() {
         final List<ItemStack> itemList = new ArrayList<>();
         final Set<String> itemNameSet = new HashSet<>();
 
@@ -107,6 +112,12 @@ public class RecipeDumpStarter {
                 } else {
                     addItemStack(stackHelper, itemStack, itemList, itemNameSet);
                 }
+            }
+        }
+
+        for (CreativeTabs creativeTab : CreativeTabs.CREATIVE_TAB_ARRAY) {
+            if(creativeTab == CreativeTabs.HOTBAR) {
+                continue;
             }
         }
 
@@ -174,7 +185,7 @@ public class RecipeDumpStarter {
         String itemKey = null;
 
         try {
-            addFallbackSubtypeInterpreter(stack);
+            StackHelper.instance().addFallbackSubtypeInterpreter(stack);
             itemKey = stackHelper.getUniqueIdentifierForStack(stack, StackHelper.UidMode.FULL);
         } catch (RuntimeException | LinkageError e) {
             String stackInfo = ErrorHelper.getItemStackInfo(stack);
