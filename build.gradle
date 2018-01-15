@@ -5,15 +5,25 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
 version = "1.0"
-group = "com.yourname.modid" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "modid"
+group = "com.ikarsoft.rd.RecipeDump" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "RecipeDump"
+
+repositories {
+    // Use 'jcenter' for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    mavenLocal()
+    jcenter()
+}
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -21,7 +31,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12-14.21.1.2443"
+    version = "1.12.2-14.23.1.2568"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.
@@ -31,6 +41,12 @@ minecraft {
     // simply re-run your setup task after changing the mappings to update your workspace.
     mappings = "snapshot_20170624"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    useDepAts = true;
+}
+
+configurations {
+    embed
+    compile.extendsFrom embed
 }
 
 dependencies {
@@ -58,7 +74,12 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.8+'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.8+'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8+'
+    compile 'com.ikarsoft:recipe-dump-model:1.0+'
 
+    embed 'com.fasterxml.jackson.core:jackson-core:2.8+'
+    embed 'com.fasterxml.jackson.core:jackson-annotations:2.8+'
+    embed 'com.fasterxml.jackson.core:jackson-databind:2.8+'
+    embed 'com.ikarsoft:recipe-dump-model:1.0+'
 }
 
 processResources {
@@ -79,3 +100,20 @@ processResources {
         exclude 'mcmod.info'
     }
 }
+
+jar {
+    from configurations.embed.collect {
+        it.isDirectory() ? it : zipTree(it).matching {
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
+
+}
+
+jar.finalizedBy shadowJar
+
+shadowJar {
+    relocate 'com.fasterxml', 'com.ikarsoft.rd.fasterxml'
+}
+
+

@@ -3,6 +3,10 @@ package com.ikarsoft.rd;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.ikarsoft.rd.model.RDData;
+import com.ikarsoft.rd.model.RDItemStack;
+import com.ikarsoft.rd.model.RDRecipe;
+import com.ikarsoft.rd.model.RDSupport;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -43,26 +47,29 @@ public class RecipeDumpStarter {
 
             List<ItemStack> allIngredients = loadIngredients();
 
-            List<IRecipe> craftingManagerRecipes = new ArrayList<>();
+            RDData data = new RDData();
+
+            for(ItemStack item:allIngredients) {
+                data.addItem(RDSupport.create(item));
+            }
+
             Iterator<IRecipe> recipeIterator = CraftingManager.REGISTRY.iterator();
             while(recipeIterator.hasNext()) {
                 IRecipe recipe = recipeIterator.next();
-                craftingManagerRecipes.add(recipe);
-                //mapper.writeValue(out, recipe);
-                Log.get().info("Recipe: "+recipe.toString());
+                data.addRecipe(RDSupport.create(recipe));
             }
 
-            for(IRecipe recipe: craftingManagerRecipes) {
-                if(recipe instanceof ShapelessRecipes) {
-                    ShapelessRecipes sRecipe = (ShapelessRecipes) recipe;
-                    String group = sRecipe.getGroup();
-                    ItemStack output = sRecipe.getRecipeOutput();
-                    List<Ingredient> ingredients = sRecipe.getIngredients();
-                    ResourceLocation registryName = sRecipe.getRegistryName();
-
-                    Log.get().info("Registry name: "+registryName.toString()+"Group: "+group+" Output: "+output+" ingredients: "+ingredients);
-                }
-            }
+//            for(IRecipe recipe: craftingManagerRecipes) {
+//                if(recipe instanceof ShapelessRecipes) {
+//                    ShapelessRecipes sRecipe = (ShapelessRecipes) recipe;
+//                    String group = sRecipe.getGroup();
+//                    ItemStack output = sRecipe.getRecipeOutput();
+//                    List<Ingredient> ingredients = sRecipe.getIngredients();
+//                    ResourceLocation registryName = sRecipe.getRegistryName();
+//
+//                    Log.get().info("Registry name: "+registryName.toString()+"Group: "+group+" Output: "+output+" ingredients: "+ingredients);
+//                }
+//            }
 
 //            List<IRecipe> forgeRegistryRecipes = new ArrayList<>();
 //            List<IRecipe> recipes = ForgeRegistries.RECIPES.getValues();
@@ -75,13 +82,16 @@ public class RecipeDumpStarter {
             Set<ResourceLocation> blockKeys = blockRegistry.getKeys();
             Log.get().info("BLOCKS! "+blockKeys.size());
             for(ResourceLocation rl: blockKeys) {
-                Log.get().info(blockRegistry.getValue(rl));
+
+                Block block = blockRegistry.getValue(rl);
+
+                Log.get().info(block);
                 //mapper.writeValue(out, blockRegistry.getValue(rl));
             }
 
-            out.println("THIS IS A TEST");
+            out.println(mapper.writeValueAsString(data));
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.get().error(e.getMessage(), e);
         }
 
         long endedTime = System.currentTimeMillis();
